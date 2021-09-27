@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+    <script type="text/javascript" language="javascript">
+
+        function send() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var obj = JSON.parse(this.response);
+
+                    var dataobj = obj["data"];
+                    var datasize = Object.keys(dataobj).length;
+                    var str1 = "";
+                    var str2 = "";
+                    if (datasize == 0) {
+                        str1 = "no data";
+                    } else {
+                        var timenow = new Date();
+                        var time1;
+                        var dsec;
+                        for (i = 1; i <= datasize; i++) {
+                            str2 = dataobj[i - 1].eta;
+                            if (str2) {
+                                time1 = new Date(str2);
+                                dsec = Math.round((((time1 - timenow)/1000)/60)*10)/10;
+                                str1 += str2 + ", ETA (minute) " + dsec + "<br>";
+                            } else {
+                                str1 += "no data<br>";
+                            }
+                        }
+                    }
+
+                    document.getElementById("textelement").innerHTML = str1;
+                    //                      alert(this.response);
+
+                    //var timenow = new Date();
+                    //var n = timenow.toISOString();
+
+                    //var n1 = new Date(d1);
+                    //var dsec = Math.round((((n1 - timenow)/1000)/60)*10)/10;
+      
+                    //document.getElementById("now").innerHTML = dsec;
+
+                }
+            };
+            let urlbase = "https://rt.data.gov.hk";
+            let urlco = document.getElementById("company").value;
+            let urlstop = pad(document.getElementById("stop").value, 6);
+            let urlroute = document.getElementById("route").value;
+            let urlstr = urlbase + "/v1/transport/citybus-nwfb/eta/" + urlco + "/" + urlstop + "/" + urlroute;
+            document.getElementById("url").innerHTML = urlstr;
+
+            // xhttp.open("GET", "https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/nwfb/002929/796p");
+            xhttp.open("GET", urlstr);
+            xhttp.send();
+
+        }
+
+        function send2() {
+            let str1 = "";
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var obj = JSON.parse(this.response);
+
+                    var dataobj = obj["data"];
+                    var datasize = Object.keys(dataobj).length;
+                    for (i = 1; i <= datasize; i++) {
+                        str1 += dataobj[i - 1].seq + ", " + dataobj[i - 1].stop + "<br>";
+                    }
+                    //                    alert(this.response);
+                }
+            };
+            let urlbase = "https://rt.data.gov.hk";
+            let urlco = document.getElementById("company").value;
+            let urlroute = document.getElementById("route").value;
+
+            let urlstr = urlbase + "/v1/transport/citybus-nwfb/route-stop/" + urlco + "/" + urlroute + "/outbound";
+            document.getElementById("url").innerHTML = urlstr;
+
+            xhttp.open("GET", urlstr);
+            xhttp.send();
+
+
+            var xhttp2 = new XMLHttpRequest();
+            xhttp2.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var obj = JSON.parse(this.response);
+
+                    var dataobj = obj["data"];
+                    var datasize = Object.keys(dataobj).length;
+                    for (i = 1; i <= datasize; i++) {
+                        str1 += dataobj[i - 1].seq + ", " + dataobj[i - 1].stop + "<br>";
+                    }
+                    //                  alert(this.response);
+                }
+                document.getElementById("textelement").innerHTML = str1;
+
+            };
+            urlstr = urlbase + "/v1/transport/citybus-nwfb/route-stop/" + urlco + "/" + urlroute + "/inbound";
+            xhttp2.open("GET", urlstr);
+            xhttp2.send();
+
+            document.getElementById("textelement").innerHTML = str1;
+
+        }
+
+        function pad(str, max) {
+            str = str.toString();
+            return str.length < max ? pad("0" + str, max) : str;
+        }
+    </script>
+
+
+    Bus company (nwfb / ctb):<br>
+    <input type="text" name="company" id="company" value="nwfb">
+    <br>
+    Route:<br>
+    <input type="text" name="route" id="route" value="796p">
+    <br>
+    Route:<br>
+    <input type="text" name="stop" id="stop" value="2929">
+    <br>
+
+    <button type="submit" onclick="javascript:send()">Get ETA</button>
+    <button type="submit" onclick="javascript:send2()">Get stops</button>
+
+    <div id='div'>
+        <div id='now'></div>
+        <div id='url'>calling this URL</div>
+        <br>
+        <div id="textelement">Press update to get next bus schedule.</div>
+    </div>
+
+</body>
+
+</html>
